@@ -4,7 +4,7 @@ namespace DriftsHelper;
 
 public class Processing
 {
-    public static int BaselineMarkerAveraging { get; set; } = 3;
+    public static int BaselineMarkerAveraging { get; set; } = 15;
     public static double IntegrateRegion(Spectrum s, double start, double end)
     {
         double integral = 0;
@@ -38,6 +38,38 @@ public class Processing
         integral -= baseline;
         return integral;
     }
+    public static double FindPeakValue(Spectrum s, double start, double end)
+    {
+        double peak = double.MinValue;
+        double baseline = 0;
+        int i = 0;
+        for (; i < s.Count; i++)
+        {
+            if (s[i].X < start) continue;
+            for (int j = i - BaselineMarkerAveraging; j < i; j++)
+            {
+                baseline += s[j].Y;
+            }
+            break;
+        }
+        if (i == s.Count) throw new ArgumentOutOfRangeException(nameof(start), "Requested region is outside of spectrum bounds");
+        for (; i < s.Count; i++)
+        {
+            var item = s[i];
+            if (item.X >= end)
+            {
+                for (int j = i; j < i + BaselineMarkerAveraging; j++)
+                {
+                    baseline += s[j].Y;
+                }
+                break;
+            }
+            if (item.Y > peak) peak = item.Y;
+        }
+        baseline /= 2 * BaselineMarkerAveraging;
+        peak -= baseline;
+        return peak;
+    }
 
     //PRIVATE
     private readonly IProvider _Provider;
@@ -46,6 +78,10 @@ public class Processing
     public Processing(IProvider p)
     {
         _Provider = p;
+        foreach (var item in p.Spectra)
+        {
+            item.Sort();
+        }
     }
     public Result IntegrateSpectra(double start, double end)
     {
@@ -53,6 +89,15 @@ public class Processing
         foreach (var item in _Provider.Spectra)
         {
             res.Add(IntegrateRegion(item, start, end));
+        }
+        return new Result(_Provider.Comment, start, end, res);
+    }
+    public Result PeakSpectra(double start, double end)
+    {
+        var res = new List<double>(_Provider.Spectra.Count);
+        foreach (var item in _Provider.Spectra)
+        {
+            res.Add(FindPeakValue(item, start, end));
         }
         return new Result(_Provider.Comment, start, end, res);
     }
