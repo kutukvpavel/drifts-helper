@@ -2,9 +2,9 @@ using System;
 
 namespace DriftsHelper;
 
-public class Result
+public class IntegrationResult
 {
-    public Result(string comment, double start, double stop, List<double> integrals)
+    public IntegrationResult(string comment, double start, double stop, List<double> integrals)
     {
         Comment = comment;
         RegionStart = start;

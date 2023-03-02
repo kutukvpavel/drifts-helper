@@ -4,6 +4,7 @@ namespace DriftsHelper;
 
 public class Processing
 {
+    public static double SubtractXTolerance {get;set;} = 0.1;
     public static int BaselineMarkerAveraging { get; set; } = 15;
     public static double IntegrateRegion(Spectrum s, double start, double end)
     {
@@ -83,22 +84,39 @@ public class Processing
             item.Sort();
         }
     }
-    public Result IntegrateSpectra(double start, double end)
+    public IntegrationResult IntegrateSpectra(double start, double end)
     {
         var res = new List<double>(_Provider.Spectra.Count);
         foreach (var item in _Provider.Spectra)
         {
             res.Add(IntegrateRegion(item, start, end));
         }
-        return new Result(_Provider.Comment, start, end, res);
+        return new IntegrationResult(_Provider.Comment, start, end, res);
     }
-    public Result PeakSpectra(double start, double end)
+    public IntegrationResult PeakSpectra(double start, double end)
     {
         var res = new List<double>(_Provider.Spectra.Count);
         foreach (var item in _Provider.Spectra)
         {
             res.Add(FindPeakValue(item, start, end));
         }
-        return new Result(_Provider.Comment, start, end, res);
+        return new IntegrationResult(_Provider.Comment, start, end, res);
+    }
+    public Spectrum SubtractSpectra(int index, int from, string name)
+    {
+        var sub = _Provider.Spectra[index];
+        var bas = _Provider.Spectra[from];
+        int len = sub.Count;
+        if (len != bas.Count) throw new NotSupportedException("Variable length spectra not supported yet");
+        Spectrum res = new(name, len);
+        for (int i = 0; i < len; i++)
+        {
+            if (Math.Abs(sub[i].X - bas[i].X) > SubtractXTolerance)
+            {
+                Console.WriteLine("Warning: X axes do not match for specified spectra!");
+            }
+            res.Add(sub[i].X, bas[i].Y - sub[i].Y);
+        }
+        return res;
     }
 }

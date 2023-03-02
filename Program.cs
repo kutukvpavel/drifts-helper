@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Globalization;
 using CommandLine;
 
@@ -14,19 +15,68 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
             Console.WriteLine("Running preprocessor...");
             Processing e = new(p);
 
-            Console.WriteLine("Integrating...");
-            List<Result> results = new();
-            foreach (var item in o.Regions)
+            List<IntegrationResult>? results = null;
+            if (o.Regions != null && o.Regions.Any())
             {
-                var splt = item.Split(',');
-                var reg = new Region(splt[0], splt[1]);
-                Console.Write("Method: ");
-                Console.WriteLine(o.PeakInsteadOfIntegrate ? "Peak" : "Integrate");
-                results.Add(o.PeakInsteadOfIntegrate ? e.PeakSpectra(reg.Start, reg.Stop) : e.IntegrateSpectra(reg.Start, reg.Stop));
+                Console.WriteLine("Integrating...");
+                results = new();
+                foreach (var item in o.Regions)
+                {
+                    try
+                    {
+                        var splt = item.Split(',');
+                        var reg = new Region(splt[0], splt[1]);
+                        Console.Write("Method: ");
+                        Console.WriteLine(o.PeakInsteadOfIntegrate ? "Peak" : "Integrate");
+                        results.Add(o.PeakInsteadOfIntegrate ? 
+                            e.PeakSpectra(reg.Start, reg.Stop) : 
+                            e.IntegrateSpectra(reg.Start, reg.Stop));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
+            }
+
+            List<Spectrum>? diffSpectra = null;
+            if (o.DifferenceSpectraPairs != null && o.DifferenceSpectraPairs.Any())
+            {
+                Console.WriteLine("Subtracting...");
+                diffSpectra = new List<Spectrum>();
+                foreach (var item in o.DifferenceSpectraPairs)
+                {
+                    try
+                    {
+                        var spltNameIndexes = item.Split('=');
+                        var spltIndexes = spltNameIndexes[1].Split(',');
+                        if (spltIndexes.Length < 2) throw new ArgumentException($"Warning: malformed diff spectra argument '{item}'!");
+                        diffSpectra.Add(e.SubtractSpectra(int.Parse(spltIndexes[0]), int.Parse(spltIndexes[1]), spltNameIndexes[0]));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
             }
 
             Console.WriteLine("Writing output file...");
-            Storage.Store(folderPath, fileName, results.ToArray());
+            try
+            {
+                if (results != null) Storage.StoreIntegralCurves(folderPath, fileName, results);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            try
+            {
+                if (diffSpectra != null) Storage.StoreDiffSpectra(folderPath, fileName, diffSpectra);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         static void Main(string[] args)
@@ -43,18 +93,26 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
                     foreach (var item in o.FolderPath)
                     {
                         const string checkForInnerFolder = "spectra";
-                        string p;
-                        var subdirs = Directory.EnumerateDirectories(item);
-                        if (subdirs.Any(x => x.EndsWith(checkForInnerFolder)))
+
+                        try
                         {
-                            Console.WriteLine("Folder was found to contain a subfolder 'spectra', assuming nested folders.");
-                            p = Path.Combine(item, checkForInnerFolder);
+                            string p;
+                            var subdirs = Directory.EnumerateDirectories(item);
+                            if (subdirs.Any(x => x.EndsWith(checkForInnerFolder)))
+                            {
+                                Console.WriteLine("Folder was found to contain a subfolder 'spectra', assuming nested folders.");
+                                p = Path.Combine(item, checkForInnerFolder);
+                            }
+                            else
+                            {
+                                p = item;
+                            }
+                            ProcessFolder(o, p, o.OutputFileName ?? $"{new DirectoryInfo(item).Name}.csv");
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            p = item;
+                            Console.WriteLine(ex);
                         }
-                        ProcessFolder(o, p, o.OutputFileName ?? $"{new DirectoryInfo(item).Name}.csv");
                     }
                 }
 
@@ -86,11 +144,13 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
         public string? ParentFolder {get;set;}
         [Option('f', "folder", Required = false)]
         public IEnumerable<string>? FolderPath {get;set;}
-        [Option('r', "regions", Required = true)]
-        public IEnumerable<string> Regions {get;set;}
+        [Option('r', "regions", Required = false, Default = null)]
+        public IEnumerable<string>? Regions {get;set;}
         [Option('o', "output", Required = false)]
         public string? OutputFileName {get;set;}
         [Option('m', "method")]
         public bool PeakInsteadOfIntegrate {get;set;}
+        [Option('d', "diff", Required = false, Default = null)]
+        public IEnumerable<string>? DifferenceSpectraPairs {get;set;}
     }
 }

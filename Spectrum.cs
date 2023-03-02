@@ -6,17 +6,20 @@ public class Spectrum
 {
     private List<Point> InnerObject;
 
-    public Spectrum(int capacity = 4)
+    public Spectrum(string name, int capacity = 4)
     {
         InnerObject = new List<Point>(capacity);
+        Name = name;
     }
 
     public int Count { get => InnerObject.Count; }
+    public string Name { get; }
 
     public Point this[int index]
     {
         get => InnerObject[index];
     }
+    public IEnumerable<Point> Points => InnerObject;
 
     public void Add(double x, double y)
     {

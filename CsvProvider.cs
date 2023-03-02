@@ -21,7 +21,7 @@ public class CsvProvider : IProvider
         {
             using TextReader t = new StreamReader(item, Options);
             using CsvReader r = new(t, CultureInfo.InvariantCulture);
-            Spectrum s = new();
+            Spectrum s = new(Path.GetFileNameWithoutExtension(item));
             r.Read();
             r.ReadHeader();
             while (r.Read())
