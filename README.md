@@ -1,5 +1,5 @@
 # drifts-helper
-A small helper for integration of multiple spectra regions among TR-DRIFTS spectra series
+A small helper for integration of multiple spectra regions in TR-DRIFTS spectra series
 
 This app expects TR-DRIFTS data in multiple `*.csv` files in a directory. Files are sorted by name (descending) prior to processing.
 
