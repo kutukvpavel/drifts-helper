@@ -7,8 +7,20 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
 {
     internal class Program
     {
+        const string EndLiteral = "end";
+
+        static string CheckSymbolicIndex(string splt, int lastSpectrumIndex)
+        {
+            if (splt == EndLiteral)
+            {
+                return lastSpectrumIndex.ToString();
+            }
+            return splt;
+        }
+
         static void ProcessFolder(Options o, string folderPath, string fileName)
         {
+            folderPath = Path.GetFullPath(folderPath);
             Console.WriteLine($"Scanning input dir {folderPath}");
             CsvProvider p = new(folderPath);
 
@@ -28,8 +40,8 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
                         var reg = new Region(splt[0], splt[1]);
                         Console.Write("Method: ");
                         Console.WriteLine(o.PeakInsteadOfIntegrate ? "Peak" : "Integrate");
-                        results.Add(o.PeakInsteadOfIntegrate ? 
-                            e.PeakSpectra(reg.Start, reg.Stop) : 
+                        results.Add(o.PeakInsteadOfIntegrate ?
+                            e.PeakSpectra(reg.Start, reg.Stop) :
                             e.IntegrateSpectra(reg.Start, reg.Stop));
                     }
                     catch (Exception ex)
@@ -51,6 +63,8 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
                         var spltNameIndexes = item.Split('=');
                         var spltIndexes = spltNameIndexes[1].Split(',');
                         if (spltIndexes.Length < 2) throw new ArgumentException($"Warning: malformed diff spectra argument '{item}'!");
+                        spltIndexes[0] = CheckSymbolicIndex(spltIndexes[0], e.LastSpectrumIndex);
+                        spltIndexes[1] = CheckSymbolicIndex(spltIndexes[1], e.LastSpectrumIndex);
                         diffSpectra.Add(e.SubtractSpectra(int.Parse(spltIndexes[0]), int.Parse(spltIndexes[1]), spltNameIndexes[0]));
                     }
                     catch (Exception ex)

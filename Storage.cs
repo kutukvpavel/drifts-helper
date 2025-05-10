@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Reflection.Metadata;
 using CsvHelper;
 
 namespace DriftsHelper;

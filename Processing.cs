@@ -76,6 +76,8 @@ public class Processing
     private readonly IProvider _Provider;
 
     //PUBLIC
+    public int LastSpectrumIndex => _Provider.TotalSpectra - 1;
+
     public Processing(IProvider p)
     {
         _Provider = p;
@@ -104,19 +106,27 @@ public class Processing
     }
     public Spectrum SubtractSpectra(int index, int from, string name)
     {
-        var sub = _Provider.Spectra[index];
-        var bas = _Provider.Spectra[from];
-        int len = sub.Count;
-        if (len != bas.Count) throw new NotSupportedException("Variable length spectra not supported yet");
-        Spectrum res = new(name, len);
-        for (int i = 0; i < len; i++)
+        try
         {
-            if (Math.Abs(sub[i].X - bas[i].X) > SubtractXTolerance)
+            var sub = _Provider.Spectra[index];
+            var bas = _Provider.Spectra[from];
+            int len = sub.Count;
+            if (len != bas.Count) throw new NotSupportedException("Variable length spectra not supported yet");
+            Spectrum res = new(name, len);
+            for (int i = 0; i < len; i++)
             {
-                Console.WriteLine("Warning: X axes do not match for specified spectra!");
+                if (Math.Abs(sub[i].X - bas[i].X) > SubtractXTolerance)
+                {
+                    Console.WriteLine("Warning: X axes do not match for specified spectra!");
+                }
+                res.Add(sub[i].X, bas[i].Y - sub[i].Y);
             }
-            res.Add(sub[i].X, bas[i].Y - sub[i].Y);
+            return res;
         }
-        return res;
+        catch (IndexOutOfRangeException)
+        {
+            Console.WriteLine($"ERROR: problem with spectra pair {name} = ({index},{from})");
+            throw;
+        }
     }
 }
