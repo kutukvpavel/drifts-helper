@@ -46,26 +46,12 @@ public static class Storage
         using TextWriter t = new StreamWriter(p);
         using CsvWriter w = new(t, CultureInfo.InvariantCulture);
         int len = r[0].Integrals.Count;
-        foreach (var item in r)
-        {
-            w.WriteField(item.Comment);
-        }
+        w.WriteField(r[0].Comment);
         w.NextRecord();
         foreach (var item in r)
         {
-            w.WriteField(item.RegionStart);
+            w.WriteField($"{item.RegionStart}-{item.RegionStop}");
         }
-        w.NextRecord();
-        foreach (var item in r)
-        {
-            w.WriteField("-");
-        }
-        w.NextRecord();
-        foreach (var item in r)
-        {
-            w.WriteField(item.RegionStop);
-        }
-        w.NextRecord();
         w.NextRecord();
         for (int i = 0; i < len; i++)
         {
