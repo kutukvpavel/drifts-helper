@@ -12,6 +12,6 @@ public interface IProvider
     /// <returns></returns>
     public Spectrum this[int index]
     {
-        get => Spectra[index + 1];
+        get => Spectra[index - 1];
     } 
 }
