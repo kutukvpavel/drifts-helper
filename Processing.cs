@@ -108,8 +108,8 @@ public class Processing
     {
         try
         {
-            var sub = _Provider.Spectra[index];
-            var bas = _Provider.Spectra[from];
+            var sub = _Provider[index];
+            var bas = _Provider[from];
             int len = sub.Count;
             if (len != bas.Count) throw new NotSupportedException("Variable length spectra not supported yet");
             Spectrum res = new(name, len);
