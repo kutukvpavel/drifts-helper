@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.IO;
 using CsvHelper;
 
 namespace DriftsHelper;
@@ -11,13 +10,13 @@ public class CsvProvider : IProvider
         Access = FileAccess.Read
     };
 
-    public static string Filter { get; set; } = "*.csv";
+    public const string DefaultFilter = "*.csv";
 
-    public CsvProvider(string folderPath)
+    public CsvProvider(string folderPath, string filter = DefaultFilter)
     {
         Comment = folderPath;
         Spectra = new List<Spectrum>();
-        foreach (var item in Directory.EnumerateFiles(folderPath, Filter).OrderBy(x => x))
+        foreach (var item in Directory.EnumerateFiles(folderPath, DefaultFilter).OrderBy(x => x))
         {
             using TextReader t = new StreamReader(item, Options);
             using CsvReader r = new(t, CultureInfo.InvariantCulture);

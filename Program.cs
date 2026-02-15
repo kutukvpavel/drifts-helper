@@ -18,11 +18,11 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
             return splt;
         }
 
-        static void ProcessFolder(Options o, string folderPath, string fileName)
+        static void ProcessFolder(Options o, string spectraFolderPath, string configFolderPath, string fileName)
         {
-            folderPath = Path.GetFullPath(folderPath);
-            Console.WriteLine($"Scanning input dir {folderPath}");
-            CsvProvider p = new(folderPath);
+            spectraFolderPath = Path.GetFullPath(spectraFolderPath);
+            Console.WriteLine($"Scanning input dir {spectraFolderPath}");
+            CsvProvider p = new(spectraFolderPath);
 
             Console.WriteLine("Running preprocessor...");
             Processing e = new(p);
@@ -77,7 +77,7 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
             Console.WriteLine("Writing output file...");
             try
             {
-                if (results != null) Storage.StoreIntegralCurves(folderPath, fileName, results);
+                if (results != null) Storage.StoreIntegralCurves(spectraFolderPath, fileName, results);
             }
             catch (Exception ex)
             {
@@ -85,7 +85,7 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
             }
             try
             {
-                if (diffSpectra != null) Storage.StoreDiffSpectra(folderPath, fileName, diffSpectra);
+                if (diffSpectra != null) Storage.StoreDiffSpectra(spectraFolderPath, fileName, diffSpectra);
             }
             catch (Exception ex)
             {
@@ -121,7 +121,7 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
                             {
                                 p = item;
                             }
-                            ProcessFolder(o, p, o.OutputFileName ?? $"{new DirectoryInfo(item).Name}.csv");
+                            ProcessFolder(o, p, item, o.OutputFileName ?? $"{new DirectoryInfo(item).Name}.csv");
                         }
                         catch (Exception ex)
                         {

@@ -4,7 +4,7 @@ namespace DriftsHelper;
 
 public class Spectrum
 {
-    private List<Point> InnerObject;
+    protected List<Point> InnerObject;
 
     public Spectrum(string name, int capacity = 4)
     {
@@ -19,7 +19,7 @@ public class Spectrum
     {
         get => InnerObject[index];
     }
-    public IEnumerable<Point> Points => InnerObject;
+    public List<Point> Points => InnerObject;
 
     public void Add(double x, double y)
     {
