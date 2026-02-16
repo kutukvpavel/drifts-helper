@@ -15,8 +15,8 @@ namespace DriftsHelper
         /// Is meant to return a conservative start index of an experiment step
         /// </summary>
         /// <param name="seconds"></param>
-        /// <returns></returns>
-        public int ExperimentTimeToSpectrumIndex(int seconds)
+        /// <returns>-1 if not found, 0 if specified time precedes intesnity profile start</returns>
+        public int ExperimentTimeToSpectrumIndex(double seconds)
         {
             int index = 1;
             foreach (var item in InnerObject)
