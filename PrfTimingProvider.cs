@@ -11,7 +11,7 @@ namespace DriftsHelper
         /// <param name="scanTimeOffset">Positive = DRIFT acqusition started earlier than experiment scripts, and vice-versa</param>
         /// <param name="fallbackSecondsPerSppectrum"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        public PrfTimingProvider(string folderPath, double scanTimeOffset = 0, double fallbackSecondsPerSppectrum = double.NaN)
+        public PrfTimingProvider(string folderPath, double fallbackSecondsPerSppectrum = double.NaN)
         {
             var csvp = new CsvProvider(folderPath, PrfFilter);
             if (csvp.Spectra.Count != 1)
@@ -24,12 +24,10 @@ namespace DriftsHelper
             {
                 InnerObject = new IntensityProfile(csvp.Spectra[1]);
             }
-            ScanTimeOffset = scanTimeOffset;
         }
 
         protected IntensityProfile? InnerObject;
         protected double SecondsPerSectrum;
-        protected double ScanTimeOffset;
 
         /// <summary>
         /// Provides conservative values 
@@ -38,7 +36,6 @@ namespace DriftsHelper
         /// <returns></returns>
         public int GetSpectrumIndex(double seconds)
         {
-            seconds += ScanTimeOffset;
             int ret;
             if (InnerObject != null)
             {

@@ -9,27 +9,36 @@ namespace DriftsHelper
                 ExternalTimeStamp = timestamp;
             }
 
+            public int ScanIndex { get; set; } = -1;
+            public double InternalTimestamp { get; set; } = double.NaN;
             public double ExternalTimeStamp { get; }
-            public abstract string Name { get; }
+            public string InternalizedName => $"{Name} @ {InternalTimestamp:F0} s";
 
-            public string GetInternalizedName(double internalTimestamp)
-            {
-                return $"{Name} @ {internalTimestamp:F0} s";
-            }
+            public abstract string Name { get; }
         }
 
-        public ExternalTimelineProviderBase(string folderPath, string filter)
+        public ExternalTimelineProviderBase(string folderPath, string filter, double timelineOffset = 0)
         {
+            TimelineOffset = timelineOffset;
             var files = Directory.GetFiles(folderPath, filter);
             if (files.Length != 1)
             {
-                throw new InvalidOperationException("Unable to find temperature profile to be used!");
+                throw new InvalidOperationException($"Unable to find profile to be used (filter: {filter})!");
             }
             FilePath = files[0];
         }
 
         protected string FilePath;
+        protected abstract IEnumerable<IExternalStep> GetRawSteps();
 
-        public abstract IEnumerable<IExternalStep> GetStepTimes();
+        public double TimelineOffset { get; }
+        public IEnumerable<IExternalStep> GetSteps()
+        {
+            foreach (var item in GetRawSteps())
+            {
+                item.InternalTimestamp = item.ExternalTimeStamp + TimelineOffset;
+                yield return item;
+            }
+        }
     }
 }

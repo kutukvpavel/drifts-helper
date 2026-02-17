@@ -6,7 +6,7 @@ namespace DriftsHelper;
 
 public class CsvProvider : IProvider
 {
-    private static FileStreamOptions Options {get;} = new FileStreamOptions() {
+    public static FileStreamOptions Options { get; } = new FileStreamOptions() {
         Access = FileAccess.Read
     };
 

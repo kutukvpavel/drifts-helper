@@ -18,13 +18,13 @@ namespace DriftsHelper
         public const string DefaultFilter = "*.yaml";
         public const double AssumedInitialTemp = 30.0;
 
-        public TempProfileProvider(string folderPath, string filter = DefaultFilter) : base(folderPath, filter)
+        public TempProfileProvider(string folderPath, double timelineOffset = 0, string filter = DefaultFilter) : base(folderPath, filter, timelineOffset)
         {
             InnerObject = Profile.Load(FilePath);
         }
 
         protected Profile InnerObject;
-        public override IEnumerable<TemperatureStep> GetStepTimes()
+        protected override IEnumerable<TemperatureStep> GetRawSteps()
         {
             double accumulator = InnerObject.InitialWaitSeconds ?? 0;
             double temp = AssumedInitialTemp;
