@@ -4,6 +4,19 @@ namespace DriftsHelper
 {
     public class TempProfileProvider : ExternalTimelineProviderBase
     {
+        public static TempProfileProvider? TryCreate(string folderPath, double timelineOffset = 0)
+        {
+            try
+            {
+                return new TempProfileProvider(folderPath, timelineOffset);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Can't create UV profile provider: " + ex.Message);
+                return null;
+            }
+        }
+
         public class TemperatureStep : ExternalStepBase
         {
             public TemperatureStep(double timestamp, double temperature) : base(timestamp)
@@ -30,6 +43,8 @@ namespace DriftsHelper
             double temp = AssumedInitialTemp;
             foreach (var item in InnerObject.Segments)
             {
+                temp = item.T;
+                yield return new TemperatureStep(accumulator, temp);
                 switch (item.Type)
                 {
                     case SegmentTypes.Isothermal:
@@ -40,9 +55,9 @@ namespace DriftsHelper
                         break;
                     default: throw new InvalidOperationException("Unsupported TempProServer scripting method!"); 
                 }
-                temp = item.T;
-                yield return new TemperatureStep(accumulator, temp);
             }
+            if (InnerObject.AfterScriptT.HasValue)
+                yield return new TemperatureStep(accumulator, InnerObject.AfterScriptT.Value);
         }
 
         /****

@@ -23,6 +23,22 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
             spectraFolderPath = Path.GetFullPath(spectraFolderPath);
             Console.WriteLine($"Scanning input dir {spectraFolderPath}");
             CsvProvider p = new(spectraFolderPath);
+            if (o.UseTimelineProviders)
+            {
+                var prf = new PrfTimingProvider(configFolderPath, o.SecondsPerSpectrum);
+                List<IExternalTimelineProvider?> externalProviders = new(2)
+                {
+                    TempProfileProvider.TryCreate(configFolderPath, o.TemperatureProfileOffset),
+                    UVProfileProvider.TryCreate(configFolderPath, o.UvProfileOffset),
+                    GasProfileProvider.TryCreate(configFolderPath, o.GasProfileOffset)
+                };
+                var timeline = new Timeline(prf, externalProviders.Where(x => x != null).Cast<IExternalTimelineProvider>().ToArray());
+                Console.WriteLine("Found the following externally-provided steps:");
+                foreach (var item in timeline.ExternalSteps)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+            }
 
             Console.WriteLine("Running preprocessor...");
             Processing e = new(p);
@@ -99,6 +115,7 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
 
                 if (o.ParentFolder != null)
                 {
+                    Console.WriteLine($"Scanning parent folder '{o.ParentFolder}'...");
                     o.FolderPath = Directory.GetDirectories(o.ParentFolder);
                 }
                 
@@ -166,5 +183,16 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
         public bool PeakInsteadOfIntegrate {get;set;}
         [Option('d', "diff", Required = false, Default = null)]
         public IEnumerable<string>? DifferenceSpectraPairs {get;set;}
+
+        [Option('t', "timeline", Required = false, Default = false)]
+        public bool UseTimelineProviders {get;set;}
+        [Option('s', "speed", Required = false, Default = 158.3417665)]
+        public double SecondsPerSpectrum {get;set;} //Default is for 30 accumulations per spectrum (~2.6 min/spectrum)
+        [Option('u', "uv-offset", Required = false, Default = 0)]
+        public double UvProfileOffset {get;set;}
+        [Option('g', "gas-offset", Required = false, Default = 0)]
+        public double GasProfileOffset {get;set;}
+        [Option("temp-offset", Required = false, Default = 0)]
+        public double TemperatureProfileOffset {get;set;}
     }
 }

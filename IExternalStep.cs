@@ -19,5 +19,7 @@ namespace DriftsHelper
         public double ExternalTimeStamp { get; }
         public string Name { get; }
         public string InternalizedName { get; }
+
+        public string ToString();
     }
 }

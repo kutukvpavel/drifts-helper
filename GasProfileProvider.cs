@@ -2,6 +2,19 @@ namespace DriftsHelper
 {
     public class GasProfileProvider : UVProfileProvider
     {
+        public static new GasProfileProvider? TryCreate(string folderPath, double timelineOffset = 0)
+        {
+            try
+            {
+                return new GasProfileProvider(folderPath, timelineOffset);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Can't create Gas profile provider: " + ex.Message);
+                return null;
+            }
+        }
+
         public class GasStep : UVStep
         {
             public GasStep(double timestamp, bool isOn) : base(timestamp, isOn)

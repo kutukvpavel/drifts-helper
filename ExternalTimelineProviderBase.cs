@@ -12,9 +12,14 @@ namespace DriftsHelper
             public int ScanIndex { get; set; } = -1;
             public double InternalTimestamp { get; set; } = double.NaN;
             public double ExternalTimeStamp { get; }
-            public string InternalizedName => $"{Name} @ {InternalTimestamp:F0} s";
+            public string InternalizedName => $"{Name} @ {InternalTimestamp:F0} s @ Scan #{ScanIndex + 1}";
 
             public abstract string Name { get; }
+
+            public override string ToString()
+            {
+                return InternalizedName;
+            }
         }
 
         public ExternalTimelineProviderBase(string folderPath, string filter, double timelineOffset = 0)

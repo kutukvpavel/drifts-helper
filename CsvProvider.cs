@@ -16,7 +16,7 @@ public class CsvProvider : IProvider
     {
         Comment = folderPath;
         Spectra = new List<Spectrum>();
-        foreach (var item in Directory.EnumerateFiles(folderPath, DefaultFilter).OrderBy(x => x))
+        foreach (var item in Directory.EnumerateFiles(folderPath, filter).OrderBy(x => x))
         {
             using TextReader t = new StreamReader(item, Options);
             using CsvReader r = new(t, CultureInfo.InvariantCulture);

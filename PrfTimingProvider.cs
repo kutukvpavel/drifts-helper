@@ -22,7 +22,7 @@ namespace DriftsHelper
             }
             else
             {
-                InnerObject = new IntensityProfile(csvp.Spectra[1]);
+                InnerObject = new IntensityProfile(csvp.Spectra[0]);
             }
         }
 
@@ -45,7 +45,7 @@ namespace DriftsHelper
             {
                 ret = (int)Math.Floor(seconds / SecondsPerSectrum);
             }
-            if (ret < 1) throw new KeyNotFoundException("This time is not present in the DRIFT timeline!");
+            if (ret < 0) throw new KeyNotFoundException("This time is not present in the DRIFT timeline!");
             return ret;
         }
     }
