@@ -21,5 +21,20 @@ namespace DriftsHelper
         protected IExternalTimelineProvider[] Providers;
 
         public List<IExternalStep> ExternalSteps { get; } = new();
+
+        public IExternalStep? GetExternalStepByName(string name, int? startIndex)
+        {
+            return ExternalSteps.FirstOrDefault(x => ((x.Name == name) || (x.InternalizedName == name)) && x.ScanIndex > startIndex);
+        }
+        public IExternalStep? GetExternalStepByName(string name, string? startIndex = null)
+        {
+            if (startIndex != null)
+            {
+                var index = GetExternalStepByName(startIndex)?.ScanIndex;
+                if (!index.HasValue) throw new ArgumentException($"Unable to find the startIndex literal '{startIndex}'");
+                return GetExternalStepByName(name, index);
+            }
+            return ExternalSteps.FirstOrDefault(x => (x.Name == name) || (x.InternalizedName == name));
+        }
     }
 }

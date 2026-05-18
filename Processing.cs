@@ -106,6 +106,7 @@ public class Processing
     }
     public Spectrum SubtractSpectra(int index, int from, string name)
     {
+        Console.WriteLine($"Subtracting '{name}' = #{from} - #{index}");
         try
         {
             var sub = _Provider[index];

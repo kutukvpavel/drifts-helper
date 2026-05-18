@@ -9,13 +9,19 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
     {
         const string EndLiteral = "end";
 
-        static string CheckSymbolicIndex(string splt, int lastSpectrumIndex)
+        static string CheckSymbolicIndex(Options o, string splt, int lastSpectrumIndex, Timeline? t, string? startIndex = null)
         {
             if (splt == EndLiteral)
             {
                 return lastSpectrumIndex.ToString();
             }
-            return splt;
+            int? step = t?.GetExternalStepByName(splt, startIndex)?.ScanIndex;
+            if (step.HasValue)
+            {
+                step -= o.TimelineConservative;
+                if (step < 1) step = 1;
+            }
+            return step?.ToString() ?? splt;
         }
 
         static void ProcessFolder(Options o, string spectraFolderPath, string configFolderPath, string fileName)
@@ -23,6 +29,7 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
             spectraFolderPath = Path.GetFullPath(spectraFolderPath);
             Console.WriteLine($"Scanning input dir {spectraFolderPath}");
             CsvProvider p = new(spectraFolderPath);
+            Timeline? t = null;
             if (o.UseTimelineProviders)
             {
                 var prf = new PrfTimingProvider(configFolderPath, o.SecondsPerSpectrum);
@@ -32,9 +39,9 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
                     UVProfileProvider.TryCreate(configFolderPath, o.UvProfileOffset),
                     GasProfileProvider.TryCreate(configFolderPath, o.GasProfileOffset)
                 };
-                var timeline = new Timeline(prf, externalProviders.Where(x => x != null).Cast<IExternalTimelineProvider>().ToArray());
+                t = new Timeline(prf, externalProviders.Where(x => x != null).Cast<IExternalTimelineProvider>().ToArray());
                 Console.WriteLine("Found the following externally-provided steps:");
-                foreach (var item in timeline.ExternalSteps)
+                foreach (var item in t.ExternalSteps)
                 {
                     Console.WriteLine(item.ToString());
                 }
@@ -79,13 +86,14 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
                         var spltNameIndexes = item.Split('=');
                         var spltIndexes = spltNameIndexes[1].Split(',');
                         if (spltIndexes.Length < 2) throw new ArgumentException($"Warning: malformed diff spectra argument '{item}'!");
-                        spltIndexes[0] = CheckSymbolicIndex(spltIndexes[0], e.LastSpectrumIndex);
-                        spltIndexes[1] = CheckSymbolicIndex(spltIndexes[1], e.LastSpectrumIndex);
+                        string startIndex = spltIndexes[0];
+                        spltIndexes[0] = CheckSymbolicIndex(o, spltIndexes[0], e.LastSpectrumIndex, t);
+                        spltIndexes[1] = CheckSymbolicIndex(o, spltIndexes[1], e.LastSpectrumIndex, t, startIndex);
                         diffSpectra.Add(e.SubtractSpectra(int.Parse(spltIndexes[0]), int.Parse(spltIndexes[1]), spltNameIndexes[0]));
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex);
+                        Console.WriteLine($"Subtraction failed: {ex}");
                     }
                 }
             }
@@ -194,5 +202,7 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
         public double GasProfileOffset {get;set;}
         [Option("temp-offset", Required = false, Default = 0)]
         public double TemperatureProfileOffset {get;set;}
+        [Option('c', "conservative", Required = false, Default = 0)]
+        public int TimelineConservative {get;set;}
     }
 }
