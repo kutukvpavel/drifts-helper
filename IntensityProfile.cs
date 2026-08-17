@@ -11,6 +11,8 @@ namespace DriftsHelper
             InnerObject = s.Points;
         }
 
+        public double TotalDuration => InnerObject.Last().X;
+
         /// <summary>
         /// Is meant to return a conservative start index of an experiment step
         /// </summary>

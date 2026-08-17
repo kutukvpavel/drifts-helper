@@ -29,6 +29,8 @@ namespace DriftsHelper
         protected IntensityProfile? InnerObject;
         protected double SecondsPerSectrum;
 
+        public string Name => InnerObject?.Name ?? "N/A";
+
         /// <summary>
         /// Provides conservative values 
         /// </summary>
@@ -39,6 +41,7 @@ namespace DriftsHelper
             int ret;
             if (InnerObject != null)
             {
+                if (InnerObject.TotalDuration < seconds) throw new ArgumentOutOfRangeException(nameof(seconds));
                 ret = InnerObject.ExperimentTimeToSpectrumIndex(seconds);
             }
             else

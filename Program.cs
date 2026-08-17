@@ -33,7 +33,7 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
             if (o.UseTimelineProviders)
             {
                 var prf = new PrfTimingProvider(configFolderPath, o.SecondsPerSpectrum);
-                List<IExternalTimelineProvider?> externalProviders = new(2)
+                List<IExternalTimelineProvider?> externalProviders = new(3)
                 {
                     TempProfileProvider.TryCreate(configFolderPath, o.TemperatureProfileOffset),
                     UVProfileProvider.TryCreate(configFolderPath, o.UvProfileOffset),
@@ -98,10 +98,13 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
                 }
             }
 
-            Console.WriteLine("Writing output file...");
             try
             {
-                if (results != null) Storage.StoreIntegralCurves(spectraFolderPath, fileName, results);
+                if (results != null) 
+                {
+                    Console.WriteLine("Writing integration output file...");
+                    Storage.StoreIntegralCurves(spectraFolderPath, fileName, results);
+                }
             }
             catch (Exception ex)
             {
@@ -109,7 +112,11 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
             }
             try
             {
-                if (diffSpectra != null) Storage.StoreDiffSpectra(spectraFolderPath, fileName, diffSpectra);
+                if (diffSpectra != null)
+                {
+                    Console.WriteLine("Writing subtraction output file...");
+                    Storage.StoreDiffSpectra(spectraFolderPath, fileName, diffSpectra);
+                }
             }
             catch (Exception ex)
             {

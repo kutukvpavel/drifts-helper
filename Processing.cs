@@ -107,6 +107,7 @@ public class Processing
     public Spectrum SubtractSpectra(int index, int from, string name)
     {
         Console.WriteLine($"Subtracting '{name}' = #{from} - #{index}");
+        if (index >= from) Console.WriteLine($"Warning: subtraction indices for {name} might be reversed.");
         try
         {
             var sub = _Provider[index];

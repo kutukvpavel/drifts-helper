@@ -13,8 +13,17 @@ namespace DriftsHelper
             ExternalSteps.Sort(IExternalStep.Comparer);
             foreach (var item in ExternalSteps)
             {
-                item.ScanIndex = Prf.GetSpectrumIndex(item.InternalTimestamp);
+                try
+                {
+                    item.ScanIndex = Prf.GetSpectrumIndex(item.InternalTimestamp);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    Console.WriteLine($"Timeline for '{prf.Name}' is longer than the experiment! The timeline will be cut short.");
+                    break;
+                }
             }
+            ExternalSteps = ExternalSteps.TakeWhile(x => x.ScanIndex >= 0).ToList();
         }
 
         protected PrfTimingProvider Prf;
@@ -31,7 +40,7 @@ namespace DriftsHelper
             if (startIndex != null)
             {
                 var index = GetExternalStepByName(startIndex)?.ScanIndex;
-                if (!index.HasValue) throw new ArgumentException($"Unable to find the startIndex literal '{startIndex}'");
+                if (!index.HasValue) return default;
                 return GetExternalStepByName(name, index);
             }
             return ExternalSteps.FirstOrDefault(x => (x.Name == name) || (x.InternalizedName == name));
