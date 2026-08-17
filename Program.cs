@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
+using System.Text;
 using CommandLine;
 
 namespace DriftsHelper // Note: actual namespace depends on the project name.
@@ -41,10 +42,14 @@ namespace DriftsHelper // Note: actual namespace depends on the project name.
                 };
                 t = new Timeline(prf, externalProviders.Where(x => x != null).Cast<IExternalTimelineProvider>().ToArray());
                 Console.WriteLine("Found the following externally-provided steps:");
+                StringBuilder timelineDescriptionBuilder = new();
                 foreach (var item in t.ExternalSteps)
                 {
-                    Console.WriteLine(item.ToString());
+                    timelineDescriptionBuilder.AppendLine(item.ToString());
                 }
+                string timelineDescription = timelineDescriptionBuilder.ToString();
+                Console.Write(timelineDescription);
+                File.WriteAllText(Path.Combine(configFolderPath, "timeline.txt"), timelineDescription);
             }
 
             Console.WriteLine("Running preprocessor...");
